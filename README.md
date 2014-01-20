@@ -7,7 +7,7 @@ What it does:
 =============
 * The web-crawler crawls all the links of www.bloomberg.com and extracts all the articles and save them as plain text into mongodb or a json file (as specified on running the script)
 
-Requirement:
+Requirements:
 ============
 
 * python v2.7.4
