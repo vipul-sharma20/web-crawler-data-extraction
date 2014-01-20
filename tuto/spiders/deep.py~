@@ -1,0 +1,54 @@
+
+from scrapy.contrib.spiders import CrawlSpider, Rule
+from scrapy.contrib.linkextractors.sgml import SgmlLinkExtractor
+from scrapy.selector import HtmlXPathSelector
+from scrapy.item import Item, Field
+from scrapy.spider import BaseSpider
+from scrapy import log
+from pymongo import Connection
+import html2text
+import json
+from bs4 import BeautifulSoup
+
+class logItem(Item):
+    description = Field()
+class ExampleSpider(CrawlSpider):
+    name = "example"
+    allowed_domains = ["bloomberg.com"]
+    start_urls = ["http://www.bloomberg.com/quickview","http://www.bloomberg.com/news"]
+    #start_urls = ["http://www.bloomberg.com/news"]
+    rules = [Rule(SgmlLinkExtractor(allow=("http://www.bloomberg.com/.*(\.html)$")), 
+                  callback='parse_item', follow=True),]
+             #Rule(SgmlLinkExtractor(allow=("http://www.bloomberg.com/news.*(\.html)$")), callback='parse_item')
+  
+    
+    def parse_item(self,response):
+        hxs = HtmlXPathSelector(response)
+        b = logItem()
+        a = response.body
+        print "\n"*10
+   
+        fragment = BeautifulSoup(a)
+        ans = fragment.find('div', {'itemprop': 'articleBody'})
+       
+        invalid_tags = ['b', 'i', 'u', 'div', 'figure', 'a', 'html', 'body', 'p', 'h1', 'h2']
+        soup = BeautifulSoup(str(ans))
+        for tag in invalid_tags: 
+            for match in soup.findAll(tag):
+                match.replaceWithChildren()
+        #str(soup).translate({ord(u"\u2019"):ord(u"'")})
+        b['description'] = str(soup)#unicode.join(u'\n',map(unicode,soup))
+        
+        print '===================================='
+        #self.log('A response from %s just arrived!' % response.url)
+        return b 
+
+         
+        
+   
+   
+       
+        
+#class ExampleSpider1(CrawlSpider):
+#    name = "technology"
+#    allowed_domains = ["bloomberg.com"]
